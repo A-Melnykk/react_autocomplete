@@ -21,13 +21,17 @@ export const Autocomplete: React.FC<Props> = ({
   const lastQuery = useRef('');
 
   useEffect(() => {
-    if (query === lastQuery.current) {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery === '' || query === lastQuery.current) {
+      setVisiblePeople([]);
+
       return;
     }
 
     const timer = setTimeout(() => {
       const filtered = people.filter(person =>
-        person.name.toLowerCase().includes(query.toLowerCase()),
+        person.name.toLowerCase().includes(trimmedQuery.toLowerCase()),
       );
 
       setVisiblePeople(filtered);
@@ -44,68 +48,52 @@ export const Autocomplete: React.FC<Props> = ({
   };
 
   return (
-    <>
-      <div className={`dropdown ${isOpen ? 'is-active' : ''}`}>
-        <div className="dropdown-trigger">
-          <input
-            type="text"
-            className="input"
-            placeholder="Enter a part of the name"
-            value={query}
-            data-cy="search-input"
-            onFocus={() => {
-              setIsOpen(true);
-              if (!query) {
-                setVisiblePeople(people);
-              }
-            }}
-            onChange={e => handleChange(e.target.value)}
-          />
-        </div>
+    <div className={`dropdown ${isOpen ? 'is-active' : ''}`}>
+      <div className="dropdown-trigger">
+        <input
+          type="text"
+          className="input"
+          placeholder="Enter a part of the name"
+          value={query}
+          data-cy="search-input"
+          onFocus={() => {
+            setIsOpen(true);
 
-        {isOpen && (
-          <div className="dropdown-menu" role="menu" data-cy="suggestions-list">
-            <div className="dropdown-content">
-              {visiblePeople.length > 0 ? (
-                visiblePeople.map(person => (
-                  <div
-                    key={person.slug}
-                    className="dropdown-item"
-                    data-cy="suggestion-item"
-                    onClick={() => {
-                      setQuery(person.name);
-                      setIsOpen(false);
-                      onSelected(person);
-                    }}
-                  >
-                    <p className="has-text-link">{person.name}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="dropdown-item" data-cy="no-suggestions-message">
-                  <p className="has-text-danger">No matching suggestions</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+            // показати всіх якщо пусто
+            if (!query.trim()) {
+              setVisiblePeople(people);
+            }
+          }}
+          onChange={e => handleChange(e.target.value)}
+        />
       </div>
 
-      {isOpen && visiblePeople.length === 0 && (
-        <div
-          className="
-    notification
-    is-danger
-    is-light
-    mt-3
-    is-align-self-flex-start
-  "
-          role="alert"
-          data-cy="no-suggestions-message"
-        >
-          <p className="has-text-danger">No matching suggestions</p>
+      {isOpen && (
+        <div className="dropdown-menu" role="menu" data-cy="suggestions-list">
+          <div className="dropdown-content">
+            {visiblePeople.length > 0 ? (
+              visiblePeople.map(person => (
+                <div
+                  key={person.slug}
+                  className="dropdown-item"
+                  data-cy="suggestion-item"
+                  onClick={() => {
+                    setQuery(person.name);
+                    setIsOpen(false);
+                    onSelected(person);
+                  }}
+                >
+                  <p className="has-text-link">{person.name}</p>
+                </div>
+              ))
+            ) : (
+              <div className="dropdown-item" data-cy="no-suggestions-message">
+                <p className="has-text-danger">No matching suggestions</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
